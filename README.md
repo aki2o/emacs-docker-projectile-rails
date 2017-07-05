@@ -1,6 +1,6 @@
 # What's this?
 
-This is a extension of Emacs that let robe work under docker container.  
+This is a extension of Emacs that let projectile-rails work under docker container.  
 You'll be able to develop using projectile-rails when rails run under docker container.
 
 # Install
