@@ -100,6 +100,15 @@
 (defvar docker-projectile-rails:project-cache-hash nil)
 
 
+;;;;;;;;;;;;;
+;; Utility
+
+(defsubst docker-projectile-rails::detect-project-root ()
+  (or (when (functionp docker-projectile-rails:project-root-detect-function)
+        (funcall docker-projectile-rails:project-root-detect-function))
+      (error "Can't detect project root path for %s" (buffer-file-name))))
+
+
 ;;;;;;;;;;;
 ;; Cache
 
@@ -160,13 +169,16 @@
   (let ((projectile-rails-generators (docker-projectile-rails::collect-generators)))
     ad-do-it))
 
-(defadvice projectile-rails--generate-with-completion (after docker-projectile-rails:dockerrize disable)
-  (let ((container-name (docker-projectile-rails::select-container)))
+(defadvice projectile-rails--generate-with-completion (around docker-projectile-rails:dockerrize disable)
+  (let* ((docker-projectile-rails:project-root (docker-projectile-rails::detect-project-root))
+         (container-name (docker-projectile-rails::select-container)))
+    ad-do-it
     (setq ad-return-value
           (format "%s exec -i %s %s" docker-command container-name ad-return-value))))
 
 (defadvice rake--choose-command-prefix (after docker-projectile-rails:dockerrize activate)
-  (let ((container-name (docker-projectile-rails::select-container)))
+  (let* ((docker-projectile-rails:project-root (docker-projectile-rails::detect-project-root))
+         (container-name (docker-projectile-rails::select-container)))
     (setq ad-return-value
           (format "%s exec -i %s %s" docker-command container-name ad-return-value))))
 
@@ -190,10 +202,8 @@
 (defun docker-projectile-rails:configure-current-project ()
   "Configure project has `current-buffer'."
   (interactive)
-  (let* ((docker-projectile-rails:project-root (or (when (functionp docker-projectile-rails:project-root-detect-function)
-                                                     (funcall docker-projectile-rails:project-root-detect-function))
-                                                   (error "Can't detect project root path for %s" (buffer-file-name))))
-         (container (docker-projectile-rails::select-container)))
+  (let* ((docker-projectile-rails:project-root (docker-projectile-rails::detect-project-root))
+         (container (docker-projectile-rails::select-container :use-cache nil)))
     (docker-projectile-rails::store-project-cache :container container)))
 
 
