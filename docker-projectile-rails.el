@@ -5,8 +5,8 @@
 ;; Author: Hiroaki Otsu <ootsuhiroaki@gmail.com>
 ;; Keywords: rails projectile docker
 ;; URL: https://github.com/aki2o/emacs-docker-projectile-rails
-;; Version: 0.1.0
-;; Package-Requires: ((projectile-rails "0.12.0") (docker "0.5.2"))
+;; Version: 0.1.1
+;; Package-Requires: ((projectile-rails "0.12.0") (docker "1.1.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -77,7 +77,7 @@
 ;;; Code:
 (eval-when-compile (require 'cl))
 (require 'projectile-rails)
-(require 'docker-containers)
+(require 'docker-container)
 (require 'advice)
 
 (defgroup docker-projectile-rails nil
@@ -145,7 +145,7 @@
 
 (defun* docker-projectile-rails::select-container (&key (use-cache t))
   (or (when use-cache (docker-projectile-rails::project-cached-value :container))
-      (let ((container (docker-read-container-name "Select Container: ")))
+      (let ((container (docker-container-read-name)))
         (docker-projectile-rails::store-project-cache :container container)
         container)))
 
